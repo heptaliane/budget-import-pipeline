@@ -1,8 +1,9 @@
+-include .env
+export
+
 .PHONY: build
 
 build:
-	@cat << EOF >> src/config.js
-	const SOURCE_FOLDER_ID = "${SOURCE_FOLDER_ID}";
-	const OUTPUT_SPREADSHEET_ID = "${OUTPUT_SPREADSHEET_ID}";
-	EOF
+	@echo "const SOURCE_FOLDER_ID = '${SOURCE_FOLDER_ID}';" > src/config.js
+	@echo "const OUTPUT_SPREADSHEET_ID = '${OUTPUT_SPREADSHEET_ID}';" >> src/config.js
 	clasp push

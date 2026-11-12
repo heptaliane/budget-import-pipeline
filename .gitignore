@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# clasp
+.clasp.json
+appscript.json
+
+# auto-generate config
+src/config.js

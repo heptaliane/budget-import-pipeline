@@ -1,0 +1,12 @@
+trigger_form_id: ""
+source_folder_id: ""
+output_spreadsheet_id: ""
+
+form_keys:
+  kind: ""
+  account: ""
+  file: ""
+
+sources: []
+
+products: []

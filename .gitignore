@@ -41,3 +41,4 @@ appscript.json
 
 # auto-generate config
 src/config.js
+config.yaml

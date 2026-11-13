@@ -1,9 +1,13 @@
--include .env
-export
+CONFIG_FILE := config.yaml
 
-.PHONY: build
+.PHONY: push vet
+
+push: build
+	clasp push
+
+vet:
+	@cue vet $(CONFIG_FILE) schema.cue
 
 build:
-	@echo "const SOURCE_FOLDER_ID = '${SOURCE_FOLDER_ID}';" > src/config.js
-	@echo "const OUTPUT_SPREADSHEET_ID = '${OUTPUT_SPREADSHEET_ID}';" >> src/config.js
-	clasp push
+	@printf "const config = " > src/config.js
+	@cue export $(CONFIG_FILE) schema.cue --out json >> src/config.js

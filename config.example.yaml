@@ -7,6 +7,6 @@ form_keys:
   account: ""
   file: ""
 
-sources: []
+sources: {}
 
 products: []

@@ -9,7 +9,7 @@ package config
 
     form_keys: #FormKeys
 
-    sources: [...#Source]
+    sources: [string]: #Source
     products: [...#Product]
 }
 
@@ -20,7 +20,6 @@ package config
 }
 
 #Source: {
-    name: string
     encoding: *"UTF-8" | "SHIFT_JIS"
     skipRows: *0 | (int & >= 0)
     columns: {

@@ -26,15 +26,17 @@ package config
     dropRows: *[] | [...#RowCondition]
     columns: {
         date: int & >= 0
-        product: int & >= 0
-        amount: int & >= 0
+        product: [...(int & >= 0)]
+    } & {
+        {amount: int & >= 0} |
+        {amountIn?: int & >= 0, amountOut: int & >= 0}
     }
     interpolateYear: *false | bool
-    invertAmount: *false | bool
+    signConversion: *"natural" | "invert"
 }
 
 #RowCondition: {
-    kind: "date" | "product" | "amount" | "category" | "expense"
+    kind: "date" | "product" | "amountIn" | "amountOut" | "category" | "expense"
     pattern: #Pattern
 }
 

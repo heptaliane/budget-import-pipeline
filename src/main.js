@@ -38,7 +38,8 @@ function appendTransactionsToSheet(rows, kind, account) {
   const rowsToAppend = rows.map(row => [
     row.date,
     row.product,
-    row.amount,
+    row.amountIn,
+    row.amountOut,
     row.category,
     kind,
     account,

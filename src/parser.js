@@ -4,19 +4,17 @@ function parseCsvStatement(file, source) {
   const validator = newRowValidator(source);
 
   return data.slice(source.skipRows).map(row => {
+    const amount = parseAmount(row, source);
+    const product = parseProduct(row, source);
     return {
       date: parseDate(row[source.columns.date], source.interpolateYear),
-      product: row[source.columns.product],
-      amount: parseAmount(row[source.columns.amount], source.invertAmount),
-      category: productResolver.resolveCategory(row[source.columns.product]),
-      expense: productResolver.shouldExpense(row[source.columns.product]),
+      product: product,
+      amountIn: amount.amountIn,
+      amountOut: amount.amountOut,
+      category: productResolver.resolveCategory(product),
+      expense: productResolver.shouldExpense(product),
     };
   }).filter(row => validator(row));
-}
-
-function parseAmount(amountStr, invertAmount) {
-  const amount = Number(amountStr.replace(/(?!^-)[^0-9]+/g, ""));
-  return invertAmount ? 0 - amount : amount;
 }
 
 function parseDate(dateStr, interpolateYear) {
@@ -31,6 +29,34 @@ function parseDate(dateStr, interpolateYear) {
   }
 
   return date;
+}
+
+function parseProduct(row, source) {
+  return source.columns.product.map(i => row[i]).join("");
+}
+
+function parseNumber(numStr) {
+  return Number(numStr.replace(/(?!^-)[^0-9]+/g, ""));
+}
+
+function parseAmount(row, source) {
+  if (source.columns.amount !== undefined) {
+    const amount = parseNumber(row[source.columns.amount]);
+    const isIncome = (amount > 0) === (source.signConversion === "natural");
+    return {
+      amountIn: isIncome ? Math.abs(amount) : 0,
+      amountOut: isIncome ? 0 : Math.abs(amount),
+    };
+  }
+
+  const amount = {
+    amountOut: parseNumber(row[source.columns.amountOut]),
+    amountIn: 0,
+  };
+  if (source.columns.amountIn !== undefined) {
+    amount.amountIn = parseNumber(row[source.columns.amountIn]);
+  }
+  return amount;
 }
 
 function createTestFunction(pat) {

@@ -21,12 +21,21 @@ package config
 
 #Source: {
     encoding: *"UTF-8" | "SHIFT_JIS"
+    delimiter: *"," | "\t"
     skipRows: *0 | (int & >= 0)
+    dropRows: *[] | [...#RowCondition]
     columns: {
         date: int & >= 0
         product: int & >= 0
         amount: int & >= 0
     }
+    interpolateYear: *false | bool
+    invertAmount: *false | bool
+}
+
+#RowCondition: {
+    kind: "date" | "product" | "amount" | "category" | "expense"
+    pattern: #Pattern
 }
 
 #Product: {
@@ -35,4 +44,4 @@ package config
     expense: *false | bool
 }
 
-#Pattern: {exact: string} | {prefix: string} | {suffix: string} | {regexp: string}
+#Pattern: {exact: string | int} | {prefix: string} | {suffix: string} | {regexp: string}

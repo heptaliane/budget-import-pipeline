@@ -42,6 +42,7 @@ function appendTransactionsToSheet(rows, kind, account) {
     row.category,
     kind,
     account,
+    row.expense,
   ]);
 
   if (rowsToAppend.length > 0) {

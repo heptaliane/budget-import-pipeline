@@ -1,34 +1,55 @@
 function parseCsvStatement(file, source) {
   const content = file.getBlob().getDataAsString(source.encoding);
-  const data = Utilities.parseCsv(content);
+  const data = Utilities.parseCsv(content, source.delimiter);
+  const validator = newRowValidator(source);
 
-  return data.slice(source.skipRows).filter(row => {
-    return !productResolver.shouldExpense(row[source.columns.product]);
-  }).map(row => {
+  return data.slice(source.skipRows).map(row => {
     return {
-      date: new Date(Date.parse(row[source.columns.date])),
+      date: parseDate(row[source.columns.date], source.interpolateYear),
       product: row[source.columns.product],
-      amount: Number(row[source.columns.amount]),
+      amount: parseAmount(row[source.columns.amount], source.invertAmount),
       category: productResolver.resolveCategory(row[source.columns.product]),
+      expense: productResolver.shouldExpense(row[source.columns.product]),
     };
-  });
+  }).filter(row => validator(row));
+}
+
+function parseAmount(amountStr, invertAmount) {
+  const amount = Number(amountStr.replace(/(?!^-)[^0-9]+/g, ""));
+  return invertAmount ? 0 - amount : amount;
+}
+
+function parseDate(dateStr, interpolateYear) {
+  const date = new Date(Date.parse(dateStr));
+
+  if (interpolateYear) {
+    const now = new Date();
+    date.setYear(now.getFullYear());
+    if (now < date) {
+      date.setYear(now.getFullYear() - 1);
+    }
+  }
+
+  return date;
+}
+
+function createTestFunction(pat) {
+  if (pat.exact !== undefined) {
+    return (v) => v === pat.exact;
+  } else if (pat.prefix !== undefined) {
+    return (v) => v.startsWith(pat.prefix);
+  } else if (pat.suffix !== undefined) {
+    return (v) => v.endsWith(pat.suffix);
+  } else if (pat.regexp !== undefined) {
+    return (new RegExp(pat.regexp)).test;
+  }
+  return (_) => false;
 }
 
 const productResolver = (function() {
   const rules = config.products.map(p => {
-    let test = (_) => true;
-    if (p.product.exact !== undefined) {
-      test = (v) => v === p.product.exact;
-    } else if (p.product.prefix !== undefined) {
-      test = (v) => v.startsWith(p.product.prefix);
-    } else if (p.product.suffix !== undefined) {
-      test = (v) => v.endsWith(p.product.suffix);
-    } else if (p.product.regexp !== undefined) {
-      test = (new RegExp(p.product.regexp)).test;
-    }
-
     return {
-      test: test,
+      test: createTestFunction(p.product),
       category: p.category,
       expense: p.expense,
     };
@@ -45,3 +66,21 @@ const productResolver = (function() {
     },
   }
 })();
+
+function newRowValidator(source) {
+  const rules = source.dropRows.map(r => {
+    return {
+      test: createTestFunction(r.pattern),
+      kind: r.kind,
+    };
+  });
+
+  return (row) => {
+    for (let rule of rules) {
+      if (rule.test(row[rule.kind])) {
+        return false;
+      }
+    }
+    return true
+  };
+}
